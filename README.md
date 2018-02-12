@@ -81,7 +81,9 @@ This project is written in [Go](golang.org).
 
 1. You need to have Go installed on your system in order to run this program. It's also possible to run it on a virtual machine or a container that has Go installed.
 
-2. I am using [mgo](https://labix.org/mgo) as the MongoDB driver for Go. It's necessary to install the required dependency before you can run the program:
+2. You also need to have a MongoDB instance with all the required twitter data running on your localhost, otherwise you will see no results. A guide to do that can also be found in the [project requirements](https://github.com/datsoftlyngby/soft2018spring-databases-teaching-material/blob/master/lecture_notes/02-Intro_to_MongoDB.ipynb).
+
+3. I am using [mgo](https://labix.org/mgo) as the MongoDB driver for Go. It's necessary to install the required dependency before you can run the program:
 
    ```bash
    $ go get gopkg.in/mgo.v2

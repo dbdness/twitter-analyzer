@@ -18,9 +18,25 @@ func main() {
 	//Switching the session to monotonic behavior. Not necessary.
 	session.SetMode(mgo.Monotonic, true)
 
-	//fmt.Println("Counting...")
+	//1.
+	//fmt.Println("Counting users...")
 	//fmt.Println(database.GetUserCount())
-	fmt.Println("Checking...")
-	database.GetTopTaggers()
 
+	//2.
+	//fmt.Println("Counting top taggers...")
+	//database.GetTopTaggers()
+
+	//3.
+	//fmt.Println("Counting most tagged users...")
+	//database.GetMostTagged()
+
+	//4.
+	//fmt.Println("Counting most active users...")
+	//database.GetMostActive()
+
+	//5 & 6.
+	fmt.Println("Getting grumpiest users...")
+	database.GetGrumpiest()
+	//fmt.Println("Getting happiest users...")
+	//database.GetHappiest()
 }

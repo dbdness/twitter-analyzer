@@ -61,15 +61,12 @@ func GetUserCount() int {
 
 }
 
-//GetTopTaggers returns a list of the users who has tagged the most people in their tweets.
+//GetTopTaggers returns a top-5 of the users who has tagged the most people in their tweets.
+//It matches and grabs all tweets that start with a '@'. Afterwards it groups the matches together by unique user,
+//and puts a 'sum' value on each user. It iterates that sum value each time a user matches, and has tagged another user.
+//Finally, it sorts descending and limits the query to 5 results.
 func GetTopTaggers() {
-	//var result []Tweet
 	var result []bson.M
-	//var result []string
-
-	//err := coll.Find(bson.M{"text": bson.M{"$regex": bson.RegEx{`@\w`, ""}}})
-	//pipeline := []bson.M{
-	//	{"$match": bson.M{"text": bson.M{"$regex": bson.RegEx{`@\w`, ""}}}
 
 	pipeline := []bson.M{
 		{"$match": bson.M{"text": bson.M{"$regex": bson.RegEx{`@\w`, ""}}}},
@@ -81,17 +78,30 @@ func GetTopTaggers() {
 		{"$limit": 5},
 	}
 
-	/*
-		pipeline := []bson.M{
-			{"$match": bson.M{"text": bson.M{"$regex": bson.RegEx{`/@\w+\/`, ""}}}},
-			{"$group": bson.M{"_id": "null",
-				"text": bson.M{"$push": "$text"},
-			},
-			},
-			{"$sort": bson.M{"user": 1}}, //1: Ascending, -1: Descending
+	err := coll.Pipe(pipeline).All(&result)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-		}
-	*/
+	for _, user := range result {
+		fmt.Println(user["_id"], "has tagged others:", user["matches"], "times")
+
+	}
+}
+
+//GetMostTagged returns a top-5 of the most tagged users.
+func GetMostTagged() {
+	var result []bson.M
+
+	pipeline := []bson.M{
+		{"$match": bson.M{"text": bson.M{"$regex": bson.RegEx{`@\w+`, ""}}}},
+		{"$group": bson.M{"_id": "$regex",
+			"matches": bson.M{"$sum": 1},
+		},
+		},
+		{"$sort": bson.M{"matches": -1}}, //1: Ascending, -1: Descending
+		{"$limit": 5},
+	}
 
 	err := coll.Pipe(pipeline).All(&result)
 	if err != nil {
@@ -99,7 +109,88 @@ func GetTopTaggers() {
 	}
 
 	for _, user := range result {
-		fmt.Println(user)
+		fmt.Println(user["_id"], "has been tagged:", user["matches"], "times")
 
+	}
+}
+
+//GetMostActive returns the most active twitter users based on numbers of tweets.
+//It simply counts every tweet by each unique username.
+func GetMostActive() {
+	var result []bson.M
+
+	pipeline := []bson.M{
+		{"$match": bson.M{"user": bson.M{"$regex": bson.RegEx{`.*`, ""}}}}, //This RegEx grabs everything in the 'user'-field.
+		{"$group": bson.M{"_id": "$user",
+			"matches": bson.M{"$sum": 1},
+		},
+		},
+		{"$sort": bson.M{"matches": -1}}, //1: Ascending, -1: Descending
+		{"$limit": 5},
+	}
+
+	err := coll.Pipe(pipeline).All(&result)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, user := range result {
+		fmt.Println(user["_id"], "has made:", user["matches"], "tweets")
+
+	}
+
+	fmt.Println(result)
+}
+
+//GetGrumpiest returns the five most grumpy/angry/sad/negative users, based on their wording.
+func GetGrumpiest() {
+	var result []bson.M
+
+	const negativeWords = "(shit|fuck|damn|bitch|crap|piss|dick|darn|asshole|bastard|douche|sad|angry|stupid)"
+
+	pipeline := []bson.M{
+		{"$match": bson.M{"text": bson.M{"$regex": bson.RegEx{fmt.Sprintf(`%s`, negativeWords), ""}}}},
+		{"$group": bson.M{"_id": "$user",
+			"matches": bson.M{"$sum": 1},
+		},
+		},
+		{"$sort": bson.M{"matches": -1}}, //1: Ascending, -1: Descending
+		{"$limit": 5},
+	}
+
+	err := coll.Pipe(pipeline).All(&result)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Most negative tweeters:")
+	for i, user := range result {
+		fmt.Println(i+1, user["_id"], "-", user["matches"], "negative tweets.")
+	}
+
+}
+
+//GetHappiest returns the five most happy/glad/positive users, based on their wording.
+func GetHappiest() {
+	var result []bson.M
+
+	pipeline := []bson.M{
+		{"$match": bson.M{"text": bson.M{"$regex": bson.RegEx{`love|happy|amazing|beautiful|yay|joy|pleasure|smile|win|winning|smiling|healthy|delight|paradise|positive|fantastic|blessed|splendid|sweetheart|great|funny`, ""}}}},
+		{"$group": bson.M{"_id": "$user",
+			"matches": bson.M{"$sum": 1},
+		},
+		},
+		{"$sort": bson.M{"matches": -1}}, //1: Ascending, -1: Descending
+		{"$limit": 5},
+	}
+
+	err := coll.Pipe(pipeline).All(&result)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Most positive tweeters:")
+	for i, user := range result {
+		fmt.Println(i+1, user["_id"], "-", user["matches"], "positive tweets.")
 	}
 }

@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 	"log"
+	"regexp"
 
 	"gopkg.in/mgo.v2/bson"
 
@@ -95,7 +96,7 @@ func GetMostTagged() {
 
 	pipeline := []bson.M{
 		{"$match": bson.M{"text": bson.M{"$regex": bson.RegEx{`@\w+`, ""}}}},
-		{"$group": bson.M{"_id": "$regex",
+		{"$group": bson.M{"_id": "$text",
 			"matches": bson.M{"$sum": 1},
 		},
 		},
@@ -103,15 +104,18 @@ func GetMostTagged() {
 		{"$limit": 5},
 	}
 
-	err := coll.Pipe(pipeline).All(&result)
+	regEx, _ := regexp.Compile(`@\w+`)
+
+	err := coll.Pipe(pipeline).AllowDiskUse().All(&result)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	for _, user := range result {
-		fmt.Println(user["_id"], "has been tagged:", user["matches"], "times")
+	for i, user := range result {
+		fmt.Println(i+1, regEx.FindString(user["_id"].(string)))
 
 	}
+
 }
 
 //GetMostActive returns the most active twitter users based on numbers of tweets.
@@ -149,7 +153,7 @@ func GetGrumpiest() {
 	const negativeWords = "(shit|fuck|damn|bitch|crap|piss|dick|darn|asshole|bastard|douche|sad|angry|stupid)"
 
 	pipeline := []bson.M{
-		{"$match": bson.M{"text": bson.M{"$regex": bson.RegEx{fmt.Sprintf(`%s`, negativeWords), ""}}}},
+		{"$match": bson.M{"text": bson.M{"$regex": bson.RegEx{negativeWords, ""}}}},
 		{"$group": bson.M{"_id": "$user",
 			"matches": bson.M{"$sum": 1},
 		},
@@ -174,8 +178,10 @@ func GetGrumpiest() {
 func GetHappiest() {
 	var result []bson.M
 
+	const positiveWords = "(love|happy|amazing|beautiful|yay|joy|pleasure|smile|win|winning|smiling|healthy|delight|paradise|positive|fantastic|blessed|splendid|sweetheart|great|funny)"
+
 	pipeline := []bson.M{
-		{"$match": bson.M{"text": bson.M{"$regex": bson.RegEx{`love|happy|amazing|beautiful|yay|joy|pleasure|smile|win|winning|smiling|healthy|delight|paradise|positive|fantastic|blessed|splendid|sweetheart|great|funny`, ""}}}},
+		{"$match": bson.M{"text": bson.M{"$regex": bson.RegEx{positiveWords, ""}}}},
 		{"$group": bson.M{"_id": "$user",
 			"matches": bson.M{"$sum": 1},
 		},

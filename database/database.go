@@ -62,7 +62,7 @@ func GetUserCount() int {
 
 }
 
-//GetTopTaggers returns a top-5 of the users who has tagged the most people in their tweets.
+//GetTopTaggers returns a top-10 of the users who has tagged the most people in their tweets.
 //It matches and grabs all tweets that start with a '@'. Afterwards it groups the matches together by unique user,
 //and puts a 'sum' value on each user. It iterates that sum value each time a user matches, and has tagged another user.
 //Finally, it sorts descending and limits the query to 5 results.
@@ -76,7 +76,7 @@ func GetTopTaggers() {
 		},
 		},
 		{"$sort": bson.M{"matches": -1}}, //1: Ascending, -1: Descending
-		{"$limit": 5},
+		{"$limit": 10},
 	}
 
 	err := coll.Pipe(pipeline).All(&result)
@@ -84,8 +84,8 @@ func GetTopTaggers() {
 		log.Fatal(err)
 	}
 
-	for _, user := range result {
-		fmt.Println(user["_id"], "has tagged others:", user["matches"], "times")
+	for i, user := range result {
+		fmt.Println(i+1, user["_id"], "has tagged others:", user["matches"], "times")
 
 	}
 }
@@ -118,7 +118,7 @@ func GetMostTagged() {
 
 }
 
-//GetMostActive returns the most active twitter users based on numbers of tweets.
+//GetMostActive returns 10 the most active twitter users based on numbers of tweets.
 //It simply counts every tweet by each unique username.
 func GetMostActive() {
 	var result []bson.M
@@ -130,7 +130,7 @@ func GetMostActive() {
 		},
 		},
 		{"$sort": bson.M{"matches": -1}}, //1: Ascending, -1: Descending
-		{"$limit": 5},
+		{"$limit": 10},
 	}
 
 	err := coll.Pipe(pipeline).All(&result)
@@ -138,8 +138,8 @@ func GetMostActive() {
 		log.Fatal(err)
 	}
 
-	for _, user := range result {
-		fmt.Println(user["_id"], "has made:", user["matches"], "tweets")
+	for i, user := range result {
+		fmt.Println(i+1, user["_id"], "has made:", user["matches"], "tweets")
 
 	}
 

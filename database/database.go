@@ -142,8 +142,6 @@ func GetMostActive() {
 		fmt.Println(i+1, user["_id"], "has made:", user["matches"], "tweets")
 
 	}
-
-	fmt.Println(result)
 }
 
 //GetGrumpiest returns the five most grumpy/angry/sad/negative users, based on their wording.

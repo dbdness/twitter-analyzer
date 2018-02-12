@@ -18,7 +18,9 @@ func main() {
 	//Switching the session to monotonic behavior. Not necessary.
 	session.SetMode(mgo.Monotonic, true)
 
-	fmt.Println("Counting...")
-	fmt.Println(database.GetUserCount())
+	//fmt.Println("Counting...")
+	//fmt.Println(database.GetUserCount())
+	fmt.Println("Checking...")
+	database.GetTopTaggers()
 
 }

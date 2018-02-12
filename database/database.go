@@ -1,7 +1,10 @@
 package database
 
 import (
+	"fmt"
 	"log"
+
+	"gopkg.in/mgo.v2/bson"
 
 	mgo "gopkg.in/mgo.v2"
 )
@@ -14,13 +17,14 @@ var db *mgo.Database
 var coll *mgo.Collection
 var session *mgo.Session
 
-type tweet struct {
-	ID       int
-	Polarity int
-	Date     string
-	Query    string
-	User     string
-	Text     string
+//Tweet is the main structure for the type of tweet in the database.
+type Tweet struct {
+	ID       int    `bson:"id"`
+	Polarity int    `bson:"polarity"`
+	Date     string `bson:"date"`
+	Query    string `bson:"query"`
+	User     string `bson:"user"`
+	Text     string `bson:"text"`
 }
 
 func init() {
@@ -55,4 +59,47 @@ func GetUserCount() int {
 
 	return len(result)
 
+}
+
+//GetTopTaggers returns a list of the users who has tagged the most people in their tweets.
+func GetTopTaggers() {
+	//var result []Tweet
+	var result []bson.M
+	//var result []string
+
+	//err := coll.Find(bson.M{"text": bson.M{"$regex": bson.RegEx{`@\w`, ""}}})
+	//pipeline := []bson.M{
+	//	{"$match": bson.M{"text": bson.M{"$regex": bson.RegEx{`@\w`, ""}}}
+
+	pipeline := []bson.M{
+		{"$match": bson.M{"text": bson.M{"$regex": bson.RegEx{`@\w`, ""}}}},
+		{"$group": bson.M{"_id": "$user",
+			"matches": bson.M{"$sum": 1},
+		},
+		},
+		{"$sort": bson.M{"matches": -1}}, //1: Ascending, -1: Descending
+		{"$limit": 5},
+	}
+
+	/*
+		pipeline := []bson.M{
+			{"$match": bson.M{"text": bson.M{"$regex": bson.RegEx{`/@\w+\/`, ""}}}},
+			{"$group": bson.M{"_id": "null",
+				"text": bson.M{"$push": "$text"},
+			},
+			},
+			{"$sort": bson.M{"user": 1}}, //1: Ascending, -1: Descending
+
+		}
+	*/
+
+	err := coll.Pipe(pipeline).All(&result)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, user := range result {
+		fmt.Println(user)
+
+	}
 }

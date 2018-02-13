@@ -51,6 +51,7 @@ This project is written in [Go](golang.org).
    7 tsarnick has made: 248 tweets
    8 what_bugs_u has made: 246 tweets
    9 Karen230683 has made: 238 tweets
+   10 DarkPiano has made: 236 tweets
    ```
 
 5. Who are the five most grumpy (most negative tweets) and the most happy (most positive tweets)? (Provide five users for each group)
